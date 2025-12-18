@@ -5,7 +5,7 @@ import { cors } from "npm:hono/cors";
 import { login, logout, register, refresh } from "./controllers/auth.ts";
 import { blacklist } from "./services/blacklist.ts";
 import { handleWs } from "./services/socket.ts"; 
-// 👇 1. DEĞİŞİKLİK: poolManager buraya eklendi
+// 1. DEĞİŞİKLİK: poolManager buraya eklendi
 import { orm, poolManager } from "./db/drizzle.ts";
 import { saveDb } from "./db/connection.ts";
 import { migrate } from "npm:drizzle-orm/sql-js/migrator";
@@ -20,21 +20,18 @@ try { await migrate(orm, { migrationsFolder: "./db/migrations" }); } catch (e) {
 
 const app = new OpenAPIHono();
 
-// OpenAPI Dokümantasyonu
-app.doc("/openapi.json", { openapi: "3.0.0", info: { title: "Tasks API", version: "1.0.0" } });
-
 // Middleware'ler (CORS, Logger, Blacklist Kontrolü)
 app.use("*", cors({ 
   origin: "*", 
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
   allowHeaders: ["content-type", "authorization"], 
-  // 👇 Frontend bu başlığı okuyabilsin diye izin veriyoruz
+  // Frontend bu başlığı okuyabilsin diye izin veriyoruz
   exposeHeaders: ["location", "X-Connection-Pool-ID"] 
 }));
 
 app.use("*", logger);
 
-// 👇 2. DEĞİŞİKLİK: Her cevaba Havuz Kimliğini (Pool ID) basıyoruz
+// 2. DEĞİŞİKLİK: Her cevaba Havuz Kimliğini (Pool ID) basıyoruz
 app.use("*", async (c, next) => {
   if (poolManager && poolManager.poolId) {
     c.header("X-Connection-Pool-ID", poolManager.poolId);
@@ -69,6 +66,35 @@ app.post("/auth/refresh", refresh);
 // DİĞER ROTALAR
 app.route("/api/tasks", tasksRoute);
 app.get("/api/hello", (c) => c.json({ msg: "System Online ✅" }));
+// Swagger'ın okuyacağı JSON haritası (Bunu eklemezsen Swagger boş görünür)
+app.get("/openapi.json", (c) => {
+  return c.json({
+    openapi: "3.0.0",
+    info: {
+      title: "Task Manager API",
+      version: "1.0.0",
+      description: "React & Hono ile geliştirilmiş Gelişmiş Görev Yönetim Sistemi API Dokümantasyonu."
+    },
+    paths: {
+      "/tasks": {
+        get: {
+          summary: "Tüm Görevleri Listele",
+          responses: { "200": { description: "Başarılı" } }
+        },
+        post: {
+          summary: "Yeni Görev Ekle",
+          responses: { "201": { description: "Oluşturuldu" } }
+        }
+      },
+      "/auth/login": {
+        post: {
+          summary: "Kullanıcı Girişi (Login)",
+          responses: { "200": { description: "Token döner" } }
+        }
+      }
+    }
+  });
+});
 app.get("/docs", swaggerUI({ url: "/openapi.json" }));
 
 // SUNUCUYU BAŞLATMA
