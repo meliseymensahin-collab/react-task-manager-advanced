@@ -1,73 +1,45 @@
-# React + TypeScript + Vite
+# React Task Manager 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bu proje, modern web teknolojileri kullanılarak geliştirilmiş, **Stateless (Durumsuz)** mimariye sahip, yüksek performanslı ve ölçeklenebilir bir Görev Yönetim Sistemidir.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Teknik Özellikler ve Uygulama Detayları (Bonuslar)
 
-## React Compiler
+Projede uygulanan teknikler, nasıl yapıldıkları ve doğrulama yöntemleri aşağıda detaylandırılmıştır:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 1. JWT Authentication & Stateless Security
+* **Ne Yapıldı:** Kullanıcı güvenliği için Access Token (1 saat) ve Refresh Token (7 gün) yapısı kuruldu.
+* **Nasıl Uygulandı:** Refresh token'lar veritabanına kaydedilmedi **(-1 ceza maddesine uygun olarak)**. Bunun yerine, token geçerliliği kriptografik imza (`jwt.verify`) ile doğrulandı.
+* **Doğrulama:** `backend/controllers/auth.ts` dosyasında hiçbir veritabanı sorgusu (`db.insert/select`) yapılmadığı, işlemin tamamen CPU üzerinde imza kontrolüyle gerçekleştiği görülebilir.
 
-## Expanding the ESLint configuration
+### 2. Logout & Bloom Filter (Blacklist)
+* **Ne Yapıldı:** Stateless yapıda sunucu tarafında oturum kapatma (Logout) mekanizması geliştirildi.
+* **Nasıl Uygulandı:** Çıkış yapan kullanıcıların token'ları veritabanını şişirmemek için bellekte çalışan **Bloom Filter** algoritmasına (Blacklist) işlendi.
+* **Doğrulama:** Çıkış yapıldıktan sonra eski token ile istek atıldığında sunucu `401 Token Revoked` yanıtı dönmektedir.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 3. Caching & Performance (Deno KV)
+* **Ne Yapıldı:** Veritabanı yükünü azaltmak ve yanıt sürelerini milisaniyeler seviyesine indirmek için önbellekleme (Caching) yapıldı.
+* **Nasıl Uygulandı:** Redis mantığıyla çalışan **Deno KV** kullanıldı. Görev listesi ilk istekte veritabanından çekilip Cache'e yazılıyor.
+* **Doğrulama:** Terminal loglarında ilk istekte `CACHE MISS`, ikinci istekte `CACHE HIT` yazdığı ve sürenin kısaldığı gözlemlenebilir.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 4. Real-Time Updates (WebSocket)
+* **Ne Yapıldı:** Sayfa yenilemeye gerek kalmadan tüm kullanıcılarda anlık veri güncellemeleri sağlandı.
+* **Nasıl Uygulandı:** Backend üzerinde WebSocket sunucusu açıldı. Bir kullanıcı görev eklediğinde veya sildiğinde, bağlı tüm istemcilere (Clients) "REFRESH" sinyali gönderiliyor.
+* **Doğrulama:** İki farklı tarayıcı sekmesinde, birinde yapılan değişikliğin diğerine anında yansıdığı test edilmiştir.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 5. Connection Pooling (Singleton Pattern)
+* **Ne Yapıldı:** SQLite veritabanının kilitlenmesini (Database Locked) önlemek için bağlantı havuzu yönetimi yapıldı.
+* **Nasıl Uygulandı:** `backend/db/drizzle.ts` dosyasında Singleton Pattern kullanılarak tüm uygulamanın tek bir veritabanı bağlantısı üzerinden konuşması sağlandı (`WAL Mode` aktif edildi).
+* **Doğrulama:** Tarayıcı Ağ (Network) sekmesinde gelen yanıtlarda `X-Connection-Pool-ID` başlığının (Header) sabit kaldığı görülebilir.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 6. API Documentation (Swagger UI)
+* **Ne Yapıldı:** API uçlarının (Endpoints) kullanımını gösteren interaktif dokümantasyon hazırlandı.
+* **Nasıl Uygulandı:** `@hono/swagger-ui` kütüphanesi entegre edildi ve `openapi.json` şeması oluşturuldu.
+* **Erişim:** `/docs` rotasında çalışmaktadır.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+
+
