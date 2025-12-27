@@ -1,0 +1,3 @@
+[0m[32mTask[0m [0m[36mdev:reset[0m bash -lc 'rm -f ./db/tasks.db && deno run --unstable-kv -A main.ts'
+[0m[1m[31merror[0m: Failed to resolve the specifier ""drizzle-orm/sqlite-core"" as its after-prefix portion ""sqlite-core"" could not be URL-parsed relative to the URL prefix "npm:drizzle-orm/" mapped to by the prefix "drizzle-orm/"
+    at [0m[36mfile:///app/backend/db/schema.ts[0m:[0m[33m1[0m:[0m[33m44[0m

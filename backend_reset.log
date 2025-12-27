@@ -1,0 +1,19 @@
+[0m[32mTask[0m [0m[36mdev:reset[0m bash -lc 'rm -f ./db/tasks.db && deno run --unstable-kv -A main.ts'
+🔌 Initializing Connection Pool (ID: pool-rqtgyiu)...
+Listening on http://0.0.0.0:8000/ (http://localhost:8000/)
+🔥 Server running at http://localhost:8000
+GET /api/hello → 200 (3 ms)
+🐢 Veritabanından çekiliyor (Sayfa: 1)
+GET /api/tasks → 200 (7 ms)
+Error: no such table: users
+    at e.handleError (file:///app/backend/node_modules/.deno/sql.js@1.13.0/node_modules/sql.js/dist/sql-wasm.js:90:371)
+    at e.prepare (file:///app/backend/node_modules/.deno/sql.js@1.13.0/node_modules/sql.js/dist/sql-wasm.js:89:104)
+    at SQLJsSession.prepareOneTimeQuery (file:///app/backend/node_modules/.deno/drizzle-orm@0.36.3/node_modules/drizzle-orm/sql-js/session.js:59:28)
+    at SQLiteSelectBase._prepare (file:///app/backend/node_modules/.deno/drizzle-orm@0.36.3/node_modules/drizzle-orm/sqlite-core/query-builders/select.js:865:85)
+    at SQLiteSelectBase.get (file:///app/backend/node_modules/.deno/drizzle-orm@0.36.3/node_modules/drizzle-orm/sqlite-core/query-builders/select.js:888:15)
+    at login (file:///app/backend/controllers/auth.ts:43:85)
+    at eventLoopTick (ext:core/01_core.js:187:7)
+    at async dispatch (file:///app/backend/node_modules/.deno/hono@4.10.7/node_modules/hono/dist/compose.js:22:17)
+    at async file:///app/backend/main.ts:39:3
+    at async dispatch (file:///app/backend/node_modules/.deno/hono@4.10.7/node_modules/hono/dist/compose.js:22:17)
+POST /auth/login → 500 (10 ms)

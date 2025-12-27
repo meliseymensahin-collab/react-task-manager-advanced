@@ -1,6 +1,7 @@
 import { drizzle } from "npm:drizzle-orm/sql-js";
 import initSqlJs from "npm:sql.js";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { Buffer } from "node:buffer";
 
 const POOL_CONFIG = {
   maxConnections: 1, 

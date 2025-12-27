@@ -1,0 +1,12 @@
+
+> react-notes-ts-advanced@0.0.0 dev
+> vite
+
+
+  VITE v5.4.11  ready in 354 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+10:09:14 AM [vite] Pre-transform error: Failed to resolve import "./Login" from "src/App.tsx". Does the file exist?
+10:11:54 AM [vite] page reload backend_secure.log
+10:17:14 AM [vite] hmr update /src/TaskApp.tsx

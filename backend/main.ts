@@ -14,6 +14,9 @@ import { tasksRoute } from "./routes/tasks.ts";
 import { DB_URL, PORT } from "./config/env.ts";
 import { z } from "npm:zod";
 import { OpenAPIHono } from "npm:@hono/zod-openapi";
+import { verify } from "npm:hono/jwt"; // 👈 'verify' eklendi
+
+const JWT_SECRET = "gizli_anahtar_buraya";
 
 // Veritabanı taşıma işlemleri
 try { await migrate(orm, { migrationsFolder: "./db/migrations" }); } catch (e) {} finally { await saveDb(); }
@@ -39,7 +42,7 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// Token Blacklist Kontrolü (Middleware)
+// Token Blacklist Kontrolü (Middleware) & Authentication Check
 app.use("/api/*", async (c, next) => {
   const authHeader = c.req.header("Authorization");
   if (authHeader) {
@@ -47,7 +50,18 @@ app.use("/api/*", async (c, next) => {
     if (parts.length === 2) {
       const token = parts[1];
       if (blacklist.has(token)) return c.json({ message: "Token Revoked" }, 401);
+
+      try {
+        await verify(token, JWT_SECRET);
+      } catch (e) {
+        return c.json({ message: "Invalid Token" }, 401);
+      }
+    } else {
+        return c.json({ message: "Invalid Authorization Header" }, 401);
     }
+  } else {
+    // If no authorization header is present for /api/* routes, return 401
+    return c.json({ message: "Unauthorized" }, 401);
   }
   await next();
 });
