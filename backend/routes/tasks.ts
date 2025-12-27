@@ -30,7 +30,7 @@ tasksRoute.get("/", async (c) => {
     console.log("🐢 Veritabanından çekiliyor (Sayfa: " + page + ")");
     
     // Sorguyu hazırla
-    let query = orm.select().from(tasks).orderBy(desc(tasks.id));
+    const query = orm.select().from(tasks).orderBy(desc(tasks.id));
     
     // Filtreleme (Arama varsa)
     let allRows = await query.all();

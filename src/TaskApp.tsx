@@ -71,7 +71,7 @@ export default function TaskApp({ token }: { token: string }) {
   }
 
   async function authorizedFetch(url: string, options: any = {}) {
-    let currentToken = getLocalToken();
+    const currentToken = getLocalToken();
     let res = await fetch(url, {
       ...options,
       headers: { ...options.headers, "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` }

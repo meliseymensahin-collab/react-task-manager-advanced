@@ -1,5 +1,5 @@
 // backend/drizzle.config.ts
-import { defineConfig } from "npm:drizzle-kit";
+import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
   schema: "./db/schema.ts",

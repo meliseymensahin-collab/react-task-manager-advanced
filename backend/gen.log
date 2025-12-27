@@ -1,0 +1,6 @@
+[0m[32mTask[0m [0m[36mm:gen[0m deno run -A npm:drizzle-kit generate --config=./drizzle.config.ts
+Reading config file '/app/backend/drizzle.config.ts'
+Cannot find module 'npm:drizzle-kit'
+Require stack:
+- /app/backend/drizzle.config.ts
+- /app/backend/node_modules/.deno/drizzle-kit@0.31.7/node_modules/drizzle-kit/bin.cjs
